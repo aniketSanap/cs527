@@ -72,6 +72,9 @@ function loadTable(data) {
         })
     }
 
+    $('.display-table').remove('#display-table');
+    $('.display-table').html("<table id='display-table'></table>")
+
     $('#display-table').DataTable({
         bSort: false,
         data : data,
@@ -79,6 +82,6 @@ function loadTable(data) {
         bFilter: true,
         bSort: true,
         bInfo: true,
-        columns: column_object
+        columns: column_object,
     }
 )}
