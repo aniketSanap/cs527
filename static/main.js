@@ -1,6 +1,5 @@
 $(document).ready(function() {
     $('#submit-button').click(function() {
-
         query = $("#textbox").val()
         database_type = $('input[name=database_type]:checked').val()
         $.ajax({
@@ -16,50 +15,6 @@ $(document).ready(function() {
                 loadTable(data);
             }
         });
-
-
-
-
-
-
-
-
-        // $('#display-table').DataTable({
-        //     // data : jsdata.list.event,
-        //     // columns : [ {
-        //     //     title : "Id",
-        //     //     data : 'id'
-        //     // }, {
-        //     //     title : "Level",
-        //     //     data : 'level'
-        //     // }, {
-        //     //     title : "Name",
-        //     //     data : 'name'
-        //     // }, {
-        //     //     title : "UserId",
-        //     //     data : 'userId'
-        //     // }, {
-        //     //     title : "Ip Address",
-        //     //     data : 'ipAddress'
-        //     // }
-    
-        //     // ]
-        //     "ajax": {
-        //         "type": "POST",
-        //         "dataType": "json",
-        //         "url": "/post",
-        //         "data": function(d) {
-        //             d.query_string = $("#textbox").val();
-        //             d.database_type= $('input[name=database_type]:checked').val();
-        //         },
-        //         "dataSrc": ""
-        //         // "success": function(data) {
-        //         //     console.log(data)
-        //         //     // $('#main').html(data.responseText);
-        //         // }
-        //     }
-
-        // });
     })
 });
 

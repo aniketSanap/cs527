@@ -25,3 +25,9 @@ def to_json(result):
     # return pd.DataFrame(result.fetchall(), columns=result.keys()).to_html(index=False)
     return pd.DataFrame(result.fetchall(), columns=result.keys()).to_json(orient='records')
 
+def get_engines(database_types=['mysql', 'redshift']):
+    engines = {}
+    for db_type in database_types:
+        engines[db_type] = get_engine(db_type)
+
+    return engines
