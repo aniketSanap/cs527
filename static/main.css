@@ -1,3 +1,16 @@
 .display-table {
     margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+#error-message, #success-message {
+    display: none;
+}
+
+.status-messages {
+    margin-top: 20px;
+}
+
+#loading {
+    display: none;
 }

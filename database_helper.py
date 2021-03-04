@@ -1,7 +1,12 @@
-from sqlalchemy import create_engine, text
+import sqlalchemy
+from sqlalchemy import create_engine, text, event
+from sqlalchemy.engine import Engine
 from config import connection_strings
 import pandas as pd
+from time import time
 
+
+run_time = None
 
 def get_engine(db_type, conn_str=None):
     if conn_str is None:
@@ -13,17 +18,21 @@ def get_engine(db_type, conn_str=None):
     return create_engine(conn_str)
 
 def query_database(query, engine):
-    with engine.connect() as conn:
-        result = conn.execute(text(query))
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text(query))
+
+    except sqlalchemy.exc.SQLAlchemyError:
+        result = None
 
     return result
 
 def to_json(result):
-    # return (pd.DataFrame(result.fetchall(), columns=result.keys())
-    #         .to_json(orient='index'))
-
-    # return pd.DataFrame(result.fetchall(), columns=result.keys()).to_html(index=False)
-    return pd.DataFrame(result.fetchall(), columns=result.keys()).to_json(orient='records')
+    """Converts sqlalchemy result to json"""
+    try:
+        return pd.DataFrame(result.fetchall(), columns=result.keys()).to_json(orient='records')
+    except sqlalchemy.exc.ResourceClosedError:
+        return '[]'
 
 def get_engines(database_types=['mysql', 'redshift']):
     engines = {}
@@ -31,3 +40,19 @@ def get_engines(database_types=['mysql', 'redshift']):
         engines[db_type] = get_engine(db_type)
 
     return engines
+
+@event.listens_for(Engine, "before_cursor_execute")
+def before_cursor_execute(conn, cursor, statement,
+                        parameters, context, executemany):
+    global run_time
+    run_time = None
+    conn.info.setdefault('query_start_time', []).append(time())
+
+@event.listens_for(Engine, "after_cursor_execute")
+def after_cursor_execute(conn, cursor, statement,
+                        parameters, context, executemany):
+    global run_time
+    run_time = time() - conn.info['query_start_time'].pop(-1)
+
+def get_runtime():
+    return run_time

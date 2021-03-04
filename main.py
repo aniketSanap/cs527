@@ -1,9 +1,7 @@
 from flask import Flask, render_template, request, jsonify
-from database_helper import get_engine, query_database, to_json, get_engines
-# from database_helper import 
+from database_helper import query_database, to_json, get_engines, get_runtime
+from json import dumps
 app = Flask(__name__)
-current_database = None
-current_engine = None
 engines = get_engines()
 
 
@@ -13,18 +11,21 @@ def main():
 
 @app.route('/post', methods=['POST'])
 def post():
-    global current_database, current_engine, engines
-    # print(request.form)
+    print(request.form)
     query_string = request.form['query_string']
     database_type = request.form['database_type']
-    if database_type != current_database:
-        current_database = database_type
-        current_engine = engines[database_type]
-        
-    print(f'query_string: {query_string}, current_database: {current_database}')
-    result = query_database(query_string, current_engine)
-    json_result = to_json(result)
-    return json_result
+    result = query_database(query_string, engines[database_type])
+    json_result = to_json(result) if result else '-1'
+    print(type(json_result), json_result)
+    run_time = get_runtime()
+    to_return = {
+        'rows': json_result,
+        'success': False if json_result == '-1' else True,
+        'row_count': result.rowcount if result else '0',
+        'run_time': str(run_time)[:5] if run_time else None
+    }
+    to_return = dumps(to_return)
+    return to_return
 
 if __name__ == '__main__':
     app.run(debug=True)

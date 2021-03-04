@@ -18,12 +18,13 @@
     <div class='container'>
         <h1>Query writer</h1>
         <br>
-            <div class="input-group mb-3">
+
+            <div class="input-group">
                 <div class="input-group-prepend">
-                    <span class="input-group-text" id="basic-addon3">Query</span>
+                  <span class="input-group-text">Query</span>
                 </div>
-                <input type="text" class="form-control" id="textbox" aria-describedby="basic-addon3" name="textbox">
-            </div>
+                <textarea class="form-control" aria-label="With textarea" id="textbox"></textarea>
+              </div>
 
             <br>
             <!-- Radio buttons -->
@@ -38,6 +39,19 @@
             <br><br>
             <div>
                 <button class="btn btn-primary" id='submit-button'>Submit</button>
+            </div>
+            <div class="spinner-border" role="status" id='loading'>
+                <span class="sr-only">Loading...</span>
+              </div>
+            <div class='status-messages'>
+                <div class="alert alert-success" id='success-message' role="alert">
+                    <div>Success!</div>
+                    <div id='success-rowcount'></div>
+                    <div id='success-time'></div>
+                </div>
+                <div class="alert alert-danger" id='error-message' role="alert">
+                    Invalid query!
+                </div>
             </div>
             <div class='display-table'>
                 <table id='display-table'>
