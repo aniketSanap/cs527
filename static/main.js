@@ -2,7 +2,7 @@ $(document).ready(function() {
     $('#submit-button').click(function() {
         $('#submit-button').css('display', 'none');
         $('#loading').css('display', 'block');
-        query = $("#textbox").val()
+        query = getSelectedTextById("textbox");
         database_type = $('input[name=database_type]:checked').val()
         $.ajax({
             type: "POST",
@@ -58,19 +58,35 @@ function loadTable(data, delim, id, class_) {
     }
 )}
 
+
 function displayMessage(code, num_rows, run_time) {
-    if (code) {
-        $('#success-message').css('display', 'block');
-        $('#error-message').css('display' ,'none');
-        $('#success-rowcount').text('Rows affected: ' + num_rows.toString())
-        $('#success-time').text('Runtime: ' + run_time.toString())
-    } else {
-        $('#success-message').css('display', 'none');
-        $('#error-message').css('display', 'block');
-    }
+  if (code) {
+    $("#success-message").css("display", "block");
+    $("#error-message").css("display", "none");
+    $("#success-rowcount").text("Rows affected: " + num_rows.toString());
+    $("#success-time").text("Runtime: " + run_time.toString());
+  } else {
+    $("#success-message").css("display", "none");
+    $("#error-message").css("display", "block");
+  }
 }
+
 
 function refreshTable(class_, id) {
     $('.' + class_).remove('#' + id);
     $('.' + class_).html("<table id='" + id + "'></table>")
 }
+
+function getSelectedTextById(id) {
+  var txtArea = document.getElementById(id);
+  var startPost = txtArea.selectionStart;
+  var endPos = txtArea.selectionEnd;
+  var selectedText = txtArea.value.substring(startPost, endPos);
+
+  if (selectedText.length <= 0) {
+    return (query = $("#textbox").val());
+  } else {
+    return selectedText;
+  }
+}
+
