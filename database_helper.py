@@ -60,3 +60,28 @@ def after_cursor_execute(conn, cursor, statement,
 
 def get_runtime():
     return run_time
+
+def save_query(query_text,query_runtime,query_is_success,records_returned,engine):
+    
+    try:
+        with engine.connect() as conn:
+            sql = "INSERT INTO saved_queries(query_text,query_runtime,query_is_success,query_records_returned,created_date) values(%s,%s,%s,%s,CURRENT_TIMESTAMP())"
+            result = conn.execute(sql,(query_text,query_runtime,query_is_success,records_returned))
+
+    except sqlalchemy.exc.SQLAlchemyError:
+        result = None
+
+    return result
+
+def get_saved_queries(engine):
+    try:
+        with engine.connect() as conn:
+            sql = "SELECT * from saved_queries order by created_date desc limit 10;"
+            result = conn.execute(sql)
+
+    except sqlalchemy.exc.SQLAlchemyError:
+        result = None
+
+    if result:
+        return pd.DataFrame(result.fetchall(), columns=result.keys()).to_json(orient='records')
+    return None
