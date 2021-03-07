@@ -4,6 +4,7 @@ from sqlalchemy.engine import Engine
 from config import connection_strings
 import pandas as pd
 from time import time
+from utils import make_unique
 
 
 run_time = None
@@ -30,9 +31,12 @@ def query_database(query, engine):
 def to_json(result):
     """Converts sqlalchemy result to json"""
     try:
-        return pd.DataFrame(result.fetchall(), columns=result.keys()).to_json(orient='records')
+        df = pd.DataFrame(result.fetchall(), columns=result.keys())
+        unique_cols, delim = make_unique(df.columns)
+        df.columns = unique_cols
+        return df.to_json(orient='records'), delim
     except sqlalchemy.exc.ResourceClosedError:
-        return '[]'
+        return '[]', None
 
 def get_engines(database_types=['mysql', 'redshift']):
     engines = {}

@@ -15,14 +15,13 @@ $(document).ready(function() {
             success: function(data) {
                 $('#submit-button').css('display', 'block');
                 $('#loading').css('display', 'none');
-                console.log('data', data);
                 if (data['success']) {
                     rows = JSON.parse(data['rows']);
                     rowCount = data['row_count'];
                     if (rowCount == '0' || rows.length == 0) {
                         refreshTable();
                     } else {
-                        loadTable(rows);
+                        loadTable(rows, data['delimiter']);
                     }
                 } else {
                     refreshTable();
@@ -33,11 +32,11 @@ $(document).ready(function() {
     })
 });
 
-function loadTable(data) {
+function loadTable(data, delim) {
     column_object = [];
     for (key in data[0]) {
         column_object.push({
-            title: key,
+            title: key.replaceAll(delim, ''),
             data: key
         })
     }

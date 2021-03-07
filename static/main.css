@@ -1,6 +1,7 @@
 .display-table {
     margin-top: 20px;
     margin-bottom: 20px;
+    overflow-x: scroll;
 }
 
 #error-message, #success-message {
@@ -13,4 +14,8 @@
 
 #loading {
     display: none;
+}
+
+.heading {
+    font-family: 'Raleway', sans-serif;
 }
