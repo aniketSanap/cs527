@@ -38,7 +38,7 @@ def to_json(result):
     """Converts sqlalchemy result to json"""
     try:
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
-        summary = df.describe()
+        summary = df.describe().round(2)
         summary = add_index(summary)
         unique_cols, delim = make_unique(df.columns)
         df.columns = unique_cols
