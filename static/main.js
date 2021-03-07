@@ -13,18 +13,22 @@ $(document).ready(function() {
                 database_type: database_type
             },
             success: function(data) {
+                console.log(data)
                 $('#submit-button').css('display', 'block');
                 $('#loading').css('display', 'none');
                 if (data['success']) {
                     rows = JSON.parse(data['rows']);
                     rowCount = data['row_count'];
                     if (rowCount == '0' || rows.length == 0) {
-                        refreshTable();
+                        refreshTable('display-table', 'display-table');
+                        refreshTable('summary-table', 'summary-table');
                     } else {
-                        loadTable(rows, data['delimiter']);
+                        loadTable(rows, data['delimiter'], 'display-table', 'display-table');
+                        loadTable(JSON.parse(data['summary']), data['delimiter'], 'summary-table', 'summary-table');
                     }
                 } else {
-                    refreshTable();
+                    refreshTable('display-table', 'display-table');
+                    refreshTable('summary-table', 'summary-table');
                 }
                 displayMessage(data['success'], data['row_count'], data['run_time']);
             }
@@ -32,7 +36,8 @@ $(document).ready(function() {
     })
 });
 
-function loadTable(data, delim) {
+function loadTable(data, delim, id, class_) {
+    console.log(data)
     column_object = [];
     for (key in data[0]) {
         column_object.push({
@@ -41,8 +46,8 @@ function loadTable(data, delim) {
         })
     }
 
-    refreshTable();
-    $('#display-table').DataTable({
+    refreshTable(class_, id);
+    $('#' + id).DataTable({
         bSort: false,
         data : data,
         // "bPaginate": false,
@@ -65,7 +70,7 @@ function displayMessage(code, num_rows, run_time) {
     }
 }
 
-function refreshTable() {
-    $('.display-table').remove('#display-table');
-    $('.display-table').html("<table id='display-table'></table>")
+function refreshTable(class_, id) {
+    $('.' + class_).remove('#' + id);
+    $('.' + class_).html("<table id='" + id + "'></table>")
 }

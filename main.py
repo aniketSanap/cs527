@@ -15,14 +15,15 @@ def post():
     query_string = request.form['query_string']
     database_type = request.form['database_type']
     result = query_database(query_string, engines[database_type])
-    json_result, delim = to_json(result) if result else ('-1', None)
+    json_result, delim, summary = to_json(result) if result else ('-1', None, None)
     run_time = get_runtime()
     to_return = {
         'rows': json_result,
         'success': False if json_result == '-1' else True,
         'row_count': result.rowcount if result else '0',
         'run_time': str(run_time)[:5] if run_time else None,
-        'delimiter': delim
+        'delimiter': delim,
+        'summary': summary
     }
     to_return = dumps(to_return)
     return to_return
