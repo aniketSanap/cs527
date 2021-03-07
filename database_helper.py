@@ -28,15 +28,23 @@ def query_database(query, engine):
 
     return result
 
+def add_index(df):
+    cols = list(df.columns)
+    df['metric'] = df.index
+    cols = ['metric'] + cols
+    return df[cols]
+
 def to_json(result):
     """Converts sqlalchemy result to json"""
     try:
         df = pd.DataFrame(result.fetchall(), columns=result.keys())
+        summary = df.describe().round(2)
+        summary = add_index(summary)
         unique_cols, delim = make_unique(df.columns)
         df.columns = unique_cols
-        return df.to_json(orient='records'), delim
+        return df.to_json(orient='records'), delim, summary.to_json(orient='records')
     except sqlalchemy.exc.ResourceClosedError:
-        return '[]', None
+        return '[]', None, None
 
 def get_engines(database_types=['mysql', 'redshift']):
     engines = {}
