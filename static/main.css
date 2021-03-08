@@ -1,4 +1,4 @@
-.display-table {
+.display-table, .summary-table {
     margin-top: 20px;
     margin-bottom: 20px;
     overflow-x: scroll;
