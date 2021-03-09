@@ -25,7 +25,7 @@ def post():
         'delimiter': delim,
         'summary': summary
     }
-    save_query(query_string,to_return['run_time'],to_return['success'],to_return['row_count'],engines['mysql'])
+    save_query(query_string,to_return['run_time'],to_return['success'],to_return['row_count'],database_type,engines['mysql'])
     to_return = dumps(to_return)
     return to_return
 

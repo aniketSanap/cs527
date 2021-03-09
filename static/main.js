@@ -1,6 +1,7 @@
 $(document).ready(function() {
     $('#history-tab').click(function() {
         get_saved_data();
+        
     });
 
     $('#submit-button').click(function() {
@@ -10,7 +11,11 @@ $(document).ready(function() {
         database_type = $('input[name=database_type]:checked').val()
         get_output(query, database_type);
     })
-
+    $('#history-table tbody>tr').click(function () {
+      var table = $('#history-table').DataTable();
+      var data = table.row( this ).data();
+      alert( 'You clicked on '+data[0]+'\'s row' );
+    } );
     $('#history-tab').click();
 });
 
@@ -24,7 +29,6 @@ function get_output(query, database_type) {
             database_type: database_type
         },
         success: function(data) {
-            console.log(data);
             $('#submit-button').css('display', 'block');
             $('#loading').css('display', 'none');
             if (data['success']) {
@@ -50,7 +54,6 @@ function get_output(query, database_type) {
 }
 
 function loadTable(data, delim, id, class_) {
-    console.log(data)
     column_object = [];
     for (key in data[0]) {
         column_object.push({
@@ -61,14 +64,23 @@ function loadTable(data, delim, id, class_) {
 
     refreshTable(class_, id);
     $('#' + id).DataTable({
+      dom: 'Bfrtip',
+        buttons: [
+            'copyHtml5',
+            'excelHtml5',
+            'csvHtml5',
+            'pdfHtml5'
+        ],
         bSort: false,
         data : data,
         // "bPaginate": false,
         bFilter: true,
         bInfo: true,
         columns: column_object,
-    }
-)}
+        
+    });
+    add_history_click();
+};
 
 function displayMessage(code, num_rows, run_time) {
   if (code) {
@@ -87,7 +99,6 @@ function get_saved_data() {
       type: "POST",
       url: "/get_query_history",    
       success: function (data) {
-        console.log(data);
         loadTable(JSON.parse(data), '$|$|', 'history-table', 'history-table');
       },
     });
@@ -110,4 +121,12 @@ function getSelectedTextById(id) {
   } else {
     return selectedText;
   }
+}
+function add_history_click(){
+  $('#history-table tbody>tr').click(function () {
+    var table = $('#history-table').DataTable();
+    var data = table.row( this ).data();
+    if(data["query_text"].length >0)
+      $("#textbox").val(data["query_text"])
+  } );
 }

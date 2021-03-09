@@ -69,12 +69,12 @@ def after_cursor_execute(conn, cursor, statement,
 def get_runtime():
     return run_time
 
-def save_query(query_text,query_runtime,query_is_success,records_returned,engine):
+def save_query(query_text,query_runtime,query_is_success,records_returned,database_used,engine):
     
     try:
         with engine.connect() as conn:
-            sql = "INSERT INTO saved_queries(query_text,query_runtime,query_is_success,query_records_returned,created_date) values(%s,%s,%s,%s,CURRENT_TIMESTAMP())"
-            result = conn.execute(sql,(query_text,query_runtime,query_is_success,records_returned))
+            sql = "INSERT INTO saved_queries(query_text,query_runtime,query_is_success,query_records_returned,database_used,created_date) values(%s,%s,%s,%s,%s,CURRENT_TIMESTAMP())"
+            result = conn.execute(sql,(query_text,query_runtime,query_is_success,records_returned,database_used))
 
     except sqlalchemy.exc.SQLAlchemyError as e:
         print(e)
@@ -85,7 +85,7 @@ def save_query(query_text,query_runtime,query_is_success,records_returned,engine
 def get_saved_queries(engine):
     try:
         with engine.connect() as conn:
-            sql = "select query_text, query_runtime, case when query_is_success then 'True' else 'False' END as query_is_success,query_records_returned,DATE_FORMAT(CONVERT_TZ(created_date,'GMT','EST'),'%%m/%%d/%%Y %%H:%%i:%%s') as created_date from saved_queries order by query_id desc limit 10;"
+            sql = "select query_text, query_runtime, case when query_is_success then 'True' else 'False' END as query_is_success,query_records_returned,database_used,DATE_FORMAT(CONVERT_TZ(created_date,'GMT','EST'),'%%m/%%d/%%Y %%H:%%i:%%s') as created_date from saved_queries order by query_id desc limit 10;"
             result = conn.execute(sql)
 
     except sqlalchemy.exc.SQLAlchemyError:
