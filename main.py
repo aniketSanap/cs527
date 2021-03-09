@@ -14,8 +14,13 @@ def post():
     print(request.form)
     query_string = request.form['query_string']
     database_type = request.form['database_type']
-    result = query_database(query_string, engines[database_type])
-    json_result, delim, summary = to_json(result) if result else ('-1', None, None)
+    exceptionMessage = ''
+    try:
+        result = query_database(query_string, engines[database_type])
+    except Exception as e:
+        result = None
+        exceptionMessage = str(e)
+    json_result, delim, summary = to_json(result) if result else ('-1', None, exceptionMessage)
     run_time = get_runtime()
     to_return = {
         'rows': json_result,

@@ -48,7 +48,7 @@ function get_output(query, database_type) {
                 refreshTable('summary-table', 'summary-table');
             }
             displayMessage(
-              data['success'], data['row_count'], data['run_time'], rowCount, obj_len
+              data['success'], data['row_count'], data['run_time'], rowCount, obj_len,data["summary"]
             );
         }
     });
@@ -84,7 +84,7 @@ function loadTable(data, delim, id, class_) {
     add_history_click();
 };
 
-function displayMessage(code, num_rows, run_time, row_count, obj_len) {
+function displayMessage(code, num_rows, run_time, row_count, obj_len,exception_message) {
   if (code) {
     $("#success-message").css("display", "block");
     $("#error-message").css("display", "none");
@@ -99,6 +99,7 @@ function displayMessage(code, num_rows, run_time, row_count, obj_len) {
   } else {
     $("#success-message").css("display", "none");
     $("#error-message").css("display", "block");
+    $("#error-message").text(exception_message)
   }
 }
 

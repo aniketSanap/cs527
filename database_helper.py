@@ -23,8 +23,9 @@ def query_database(query, engine):
         with engine.connect() as conn:
             result = conn.execute(text(query))
 
-    except sqlalchemy.exc.SQLAlchemyError:
+    except sqlalchemy.exc.SQLAlchemyError as ex:
         result = None
+        raise ex
 
     return result
 
