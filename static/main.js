@@ -94,7 +94,7 @@ function displayMessage(code, num_rows, run_time, row_count, obj_len) {
     $("#success-time").text("Runtime: " + run_time.toString());
     if (row_count != obj_len) {
       $('#success-is-truncated').css("display", "block");
-      $('#success-is-truncated').text("Truncated from " + row_count.toString() + " to " + obj_len.toString());
+      $('#success-is-truncated').html("<b>Truncated from " + row_count.toString() + " to " + obj_len.toString() + '</b>');
     } else {
       $('#success-is-truncated').css("display", "none");
     }
