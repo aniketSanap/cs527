@@ -20,6 +20,8 @@ $(document).ready(function() {
 });
 
 function get_output(query, database_type) {
+    let obj_len = null;
+    let rowCount = null;
     $.ajax({
         type: "POST",
         dataType: "json",
@@ -31,7 +33,6 @@ function get_output(query, database_type) {
         success: function(data) {
             $('#submit-button').css('display', 'block');
             $('#loading').css('display', 'none');
-            let obj_len = null;
             if (data['success']) {
                 rows = JSON.parse(data['rows']);
                 obj_len = rows.length;
