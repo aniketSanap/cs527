@@ -27,8 +27,10 @@ function get_output(query, database_type) {
             console.log(data);
             $('#submit-button').css('display', 'block');
             $('#loading').css('display', 'none');
+            let obj_len = null;
             if (data['success']) {
                 rows = JSON.parse(data['rows']);
+                obj_len = rows.length;
                 rowCount = data['row_count'];
                 if (rowCount == '0' || rows.length == 0) {
                     refreshTable('display-table', 'display-table');
@@ -44,7 +46,9 @@ function get_output(query, database_type) {
                 refreshTable('display-table', 'display-table');
                 refreshTable('summary-table', 'summary-table');
             }
-            displayMessage(data['success'], data['row_count'], data['run_time']);
+            displayMessage(
+              data['success'], data['row_count'], data['run_time'], rowCount, obj_len
+            );
         }
     });
 }
@@ -70,12 +74,18 @@ function loadTable(data, delim, id, class_) {
     }
 )}
 
-function displayMessage(code, num_rows, run_time) {
+function displayMessage(code, num_rows, run_time, row_count, obj_len) {
   if (code) {
     $("#success-message").css("display", "block");
     $("#error-message").css("display", "none");
-    $("#success-rowcount").text("Rows affected: " + num_rows.toString());
+    $("#success-rowcount").text("Number of rows: " + num_rows.toString());
     $("#success-time").text("Runtime: " + run_time.toString());
+    if (row_count != obj_len) {
+      $('#success-is-truncated').css("display", "block");
+      $('#success-is-truncated').text("Truncated from " + row_count.toString() + " to " + obj_len.toString());
+    } else {
+      $('#success-is-truncated').css("display", "none");
+    }
   } else {
     $("#success-message").css("display", "none");
     $("#error-message").css("display", "block");

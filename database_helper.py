@@ -1,7 +1,7 @@
 import sqlalchemy
 from sqlalchemy import create_engine, text, event
 from sqlalchemy.engine import Engine
-from config import connection_strings
+from config import connection_strings, row_limiter
 import pandas as pd
 from time import time
 from utils import make_unique
@@ -37,13 +37,11 @@ def add_index(df):
 def to_json(result):
     """Converts sqlalchemy result to json"""
     try:
-        df = pd.DataFrame(result.fetchall(), columns=result.keys())
+        df = pd.DataFrame(result.fetchall(), columns=result.keys())[:row_limiter]
         summary = df.describe().round(2)
         summary = add_index(summary)
         unique_cols, delim = make_unique(df.columns)
         summary_unique_cols, delim = make_unique(summary.columns)
-        # print(f'unique_cols: {unique_cols}\noriginal_cols: {list(df.columns)}')
-        # print(f'summary unique_cols: {summary_unique_cols}\nsummary original_cols: {list(summary.columns)}')
         df.columns = unique_cols
         summary.columns = summary_unique_cols
         return df.to_json(orient='records'), delim, summary.to_json(orient='records')
@@ -58,7 +56,6 @@ def get_engines(database_types=['mysql', 'redshift']):
     engines = {}
     for db_type in database_types:
         engines[db_type] = get_engine(db_type)
-
     return engines
 
 @event.listens_for(Engine, "before_cursor_execute")
@@ -78,7 +75,6 @@ def get_runtime():
     return run_time
 
 def save_query(query_text,query_runtime,query_is_success,records_returned,engine):
-    
     try:
         with engine.connect() as conn:
             sql = "INSERT INTO saved_queries(query_text,query_runtime,query_is_success,query_records_returned,created_date) values(%s,%s,%s,%s,CURRENT_TIMESTAMP())"
@@ -93,7 +89,7 @@ def save_query(query_text,query_runtime,query_is_success,records_returned,engine
 def get_saved_queries(engine):
     try:
         with engine.connect() as conn:
-            sql = "select query_text, query_runtime, case when query_is_success then 'True' else 'False' END as query_is_success,query_records_returned,DATE_FORMAT(CONVERT_TZ(created_date,'GMT','EST'),'%%m/%%d/%%Y %%H:%%i:%%s') as created_date from saved_queries order by query_id desc limit 10;"
+            sql = "select query_text, query_runtime, case when query_is_success then 'True' else 'False' END as query_is_success,query_records_returned,DATE_FORMAT(CONVERT_TZ(created_date,'GMT','EST'),'%%m/%%d/%%Y %%H:%%i:%%s') as created_date from saved_queries order by query_id desc limit 100;"
             result = conn.execute(sql)
 
     except sqlalchemy.exc.SQLAlchemyError:
