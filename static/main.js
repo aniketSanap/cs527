@@ -1,6 +1,7 @@
 $(document).ready(function() {
     $('#history-tab').click(function() {
         get_saved_data();
+        
     });
 
     $('#submit-button').click(function() {
@@ -10,7 +11,11 @@ $(document).ready(function() {
         database_type = $('input[name=database_type]:checked').val()
         get_output(query, database_type);
     })
-
+    $('#history-table tbody>tr').click(function () {
+      var table = $('#history-table').DataTable();
+      var data = table.row( this ).data();
+      alert( 'You clicked on '+data[0]+'\'s row' );
+    } );
     $('#history-tab').click();
 });
 
@@ -24,11 +29,12 @@ function get_output(query, database_type) {
             database_type: database_type
         },
         success: function(data) {
-            console.log(data);
             $('#submit-button').css('display', 'block');
             $('#loading').css('display', 'none');
+            let obj_len = null;
             if (data['success']) {
                 rows = JSON.parse(data['rows']);
+                obj_len = rows.length;
                 rowCount = data['row_count'];
                 if (rowCount == '0' || rows.length == 0) {
                     refreshTable('display-table', 'display-table');
@@ -44,13 +50,14 @@ function get_output(query, database_type) {
                 refreshTable('display-table', 'display-table');
                 refreshTable('summary-table', 'summary-table');
             }
-            displayMessage(data['success'], data['row_count'], data['run_time']);
+            displayMessage(
+              data['success'], data['row_count'], data['run_time'], rowCount, obj_len
+            );
         }
     });
 }
 
 function loadTable(data, delim, id, class_) {
-    console.log(data)
     column_object = [];
     for (key in data[0]) {
         column_object.push({
@@ -61,21 +68,36 @@ function loadTable(data, delim, id, class_) {
 
     refreshTable(class_, id);
     $('#' + id).DataTable({
+      dom: 'Bfrtip',
+        buttons: [
+            'copyHtml5',
+            'excelHtml5',
+            'csvHtml5',
+            'pdfHtml5'
+        ],
         bSort: false,
         data : data,
         // "bPaginate": false,
         bFilter: true,
         bInfo: true,
         columns: column_object,
-    }
-)}
+        
+    });
+    add_history_click();
+};
 
-function displayMessage(code, num_rows, run_time) {
+function displayMessage(code, num_rows, run_time, row_count, obj_len) {
   if (code) {
     $("#success-message").css("display", "block");
     $("#error-message").css("display", "none");
-    $("#success-rowcount").text("Rows affected: " + num_rows.toString());
+    $("#success-rowcount").text("Number of rows: " + num_rows.toString());
     $("#success-time").text("Runtime: " + run_time.toString());
+    if (row_count != obj_len) {
+      $('#success-is-truncated').css("display", "block");
+      $('#success-is-truncated').text("Truncated from " + row_count.toString() + " to " + obj_len.toString());
+    } else {
+      $('#success-is-truncated').css("display", "none");
+    }
   } else {
     $("#success-message").css("display", "none");
     $("#error-message").css("display", "block");
@@ -87,7 +109,6 @@ function get_saved_data() {
       type: "POST",
       url: "/get_query_history",    
       success: function (data) {
-        console.log(data);
         loadTable(JSON.parse(data), '$|$|', 'history-table', 'history-table');
       },
     });
@@ -110,4 +131,12 @@ function getSelectedTextById(id) {
   } else {
     return selectedText;
   }
+}
+function add_history_click(){
+  $('#history-table tbody>tr').click(function () {
+    var table = $('#history-table').DataTable();
+    var data = table.row( this ).data();
+    if(data["query_text"].length >0)
+      $("#textbox").val(data["query_text"])
+  } );
 }

@@ -23,9 +23,9 @@ def post():
         'row_count': result.rowcount if result else '0',
         'run_time': str(run_time)[:5] if run_time else None,
         'delimiter': delim,
-        'summary': summary
+        'summary': summary,
     }
-    save_query(query_string,to_return['run_time'],to_return['success'],to_return['row_count'],engines['mysql'])
+    save_query(query_string,to_return['run_time'],to_return['success'],to_return['row_count'],database_type,engines['mysql'])
     to_return = dumps(to_return)
     return to_return
 
