@@ -41,10 +41,18 @@ def to_json(result):
         summary = df.describe().round(2)
         summary = add_index(summary)
         unique_cols, delim = make_unique(df.columns)
+        summary_unique_cols, delim = make_unique(summary.columns)
+        # print(f'unique_cols: {unique_cols}\noriginal_cols: {list(df.columns)}')
+        # print(f'summary unique_cols: {summary_unique_cols}\nsummary original_cols: {list(summary.columns)}')
         df.columns = unique_cols
+        summary.columns = summary_unique_cols
         return df.to_json(orient='records'), delim, summary.to_json(orient='records')
     except sqlalchemy.exc.ResourceClosedError:
         return '[]', None, None
+
+    except Exception as e:
+        print(e)
+        return '-1', None, None
 
 def get_engines(database_types=['mysql', 'redshift']):
     engines = {}
