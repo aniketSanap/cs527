@@ -11,11 +11,7 @@ $(document).ready(function() {
         database_type = $('input[name=database_type]:checked').val()
         get_output(query, database_type);
     })
-    $('#history-table tbody>tr').click(function () {
-      var table = $('#history-table').DataTable();
-      var data = table.row( this ).data();
-      alert( 'You clicked on '+data[0]+'\'s row' );
-    } );
+    
     $('#history-tab').click();
 });
 
@@ -84,6 +80,7 @@ function loadTable(data, delim, id, class_) {
         columns: column_object,
         
     });
+    
     add_history_click();
 };
 
@@ -134,10 +131,11 @@ function getSelectedTextById(id) {
   }
 }
 function add_history_click(){
-  $('#history-table tbody>tr').click(function () {
-    var table = $('#history-table').DataTable();
-    var data = table.row( this ).data();
-    if(data["query_text"].length >0)
-      $("#textbox").val(data["query_text"])
-  } );
+      $('#history-table tbody').on('click', 'tr', function () {
+        var table = $('#history-table').DataTable();
+        var data = table.row( this ).data();
+        if(data["query_text"].length >0)
+          $("#textbox").val(data["query_text"])
+      } );
+     
 }
