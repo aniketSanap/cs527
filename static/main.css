@@ -1,9 +1,13 @@
-.display-table, .summary-table {
+.display-table, .summary-table, .history-table {
     margin-top: 20px;
     margin-bottom: 20px;
     overflow-x: scroll;
 }
 
+#output-tab, #summary-tab {
+    display: none;
+}
+ 
 #error-message, #success-message {
     display: none;
 }
