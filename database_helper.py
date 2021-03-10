@@ -21,7 +21,7 @@ def get_engine(db_type, conn_str=None):
         else:
             raise KeyError(f'{db_type} does not exist in config file!')
 
-    return create_engine(conn_str)
+    return create_engine(conn_str, pool_pre_ping=True)
 
 def query_database(query, engine):
     """
