@@ -38,20 +38,24 @@ def add_index(df):
 def to_json(result):
     """Converts sqlalchemy result to json"""
     try:
-        df = pd.DataFrame(result.fetchall(), columns=result.keys())[:row_limiter]
+        is_truncated = False
+        df = pd.DataFrame(result.fetchall(), columns=result.keys())
+        if len(df) > row_limiter:
+            df = df[:row_limiter]
+            is_truncated = True
         summary = df.describe().round(2)
         summary = add_index(summary)
         unique_cols, delim = make_unique(df.columns)
         summary_unique_cols, delim = make_unique(summary.columns)
         df.columns = unique_cols
         summary.columns = summary_unique_cols
-        return df.to_json(orient='records'), delim, summary.to_json(orient='records')
+        return df.to_json(orient='records'), delim, summary.to_json(orient='records'), is_truncated
     except sqlalchemy.exc.ResourceClosedError:
-        return '[]', None, None
+        return '[]', None, None, False
 
     except Exception as e:
         print(e)
-        return '-1', None, None
+        return '-1', None, None, False
 
 def get_engines(database_types=['mysql', 'redshift']):
     engines = {}

@@ -36,6 +36,7 @@ function get_output(query, database_type) {
                 if (rowCount == '0' || rows.length == 0) {
                     refreshTable('display-table', 'display-table');
                     refreshTable('summary-table', 'summary-table');
+                    $('#history-tab').click();
                 } else {
                     $('#output-tab').click();
                     $('#output-tab').css('display', 'block');
@@ -46,9 +47,10 @@ function get_output(query, database_type) {
             } else {
                 refreshTable('display-table', 'display-table');
                 refreshTable('summary-table', 'summary-table');
+                $('#history-tab').click();
             }
             displayMessage(
-              data['success'], data['row_count'], data['run_time'], rowCount, obj_len,data["summary"]
+              data['success'], data['row_count'], data['run_time'], rowCount, obj_len, data["is_truncated"], obj_len,data["summary"]
             );
         }
     });
@@ -84,13 +86,13 @@ function loadTable(data, delim, id, class_) {
     add_history_click();
 };
 
-function displayMessage(code, num_rows, run_time, row_count, obj_len,exception_message) {
+function displayMessage(code, num_rows, run_time, row_count, obj_len, is_truncated, exception_message) {
   if (code) {
     $("#success-message").css("display", "block");
     $("#error-message").css("display", "none");
     $("#success-rowcount").text("Number of rows: " + num_rows.toString());
     $("#success-time").text("Runtime: " + run_time.toString());
-    if (row_count != obj_len) {
+    if (is_truncated) {
       $('#success-is-truncated').css("display", "block");
       $('#success-is-truncated').html("<b>Truncated from " + row_count.toString() + " to " + obj_len.toString() + '</b>');
     } else {
@@ -137,6 +139,6 @@ function add_history_click(){
         var data = table.row( this ).data();
         if(data["query_text"].length >0)
           $("#textbox").val(data["query_text"])
+        $('#textbox').focus();
       } );
-     
 }

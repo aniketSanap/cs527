@@ -20,7 +20,7 @@ def post():
     except Exception as e:
         result = None
         exceptionMessage = str(e)
-    json_result, delim, summary = to_json(result) if result else ('-1', None, exceptionMessage)
+    json_result, delim, summary, is_truncated = to_json(result) if result else ('-1', None, exceptionMessage)
     run_time = get_runtime()
     to_return = {
         'rows': json_result,
@@ -29,6 +29,7 @@ def post():
         'run_time': str(run_time)[:5] if run_time else None,
         'delimiter': delim,
         'summary': summary,
+        'is_truncated': is_truncated
     }
     save_query(query_string,to_return['run_time'],to_return['success'],to_return['row_count'],database_type,engines['mysql'])
     to_return = dumps(to_return)
