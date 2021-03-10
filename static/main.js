@@ -50,7 +50,7 @@ function get_output(query, database_type) {
                 $('#history-tab').click();
             }
             displayMessage(
-              data['success'], data['row_count'], data['run_time'], rowCount, obj_len, data["is_truncated"], obj_len,data["summary"]
+              data['success'], data['row_count'], data['run_time'], rowCount, obj_len, data["is_truncated"], data['summary']
             );
         }
     });
@@ -87,6 +87,7 @@ function loadTable(data, delim, id, class_) {
 };
 
 function displayMessage(code, num_rows, run_time, row_count, obj_len, is_truncated, exception_message) {
+  console.log(exception_message);
   if (code) {
     $("#success-message").css("display", "block");
     $("#error-message").css("display", "none");
@@ -99,9 +100,9 @@ function displayMessage(code, num_rows, run_time, row_count, obj_len, is_truncat
       $('#success-is-truncated').css("display", "none");
     }
   } else {
-    $("#success-message").css("display", "none");
-    $("#error-message").css("display", "block");
-    $("#error-message").text(exception_message)
+      $("#success-message").css("display", "none");
+      $("#error-message").css("display", "block");
+      $("#error-message").text(exception_message)
   }
 }
 

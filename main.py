@@ -20,6 +20,7 @@ def post():
     except Exception as e:
         result = None
         exceptionMessage = str(e)
+        print(f'Error: {exceptionMessage}')
     json_result, delim, summary, is_truncated = to_json(result) if result else ('-1', None, exceptionMessage, False)
     run_time = get_runtime()
     to_return = {
