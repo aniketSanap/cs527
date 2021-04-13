@@ -1,0 +1,6 @@
+
+
+******Mongo Query:*********
+
+db.departments.find({})
+

@@ -5,9 +5,11 @@ from config import connection_strings, row_limiter
 import pandas as pd
 from time import time
 from utils import make_unique
-
-
+import os
+from pymongo import MongoClient
+from pydrill.client import PyDrill
 run_time = None
+
 
 def get_engine(db_type, conn_str=None):
     """
@@ -22,6 +24,7 @@ def get_engine(db_type, conn_str=None):
             raise KeyError(f'{db_type} does not exist in config file!')
 
     return create_engine(conn_str, pool_pre_ping=True)
+
 
 def query_database(query, engine):
     """
@@ -39,6 +42,7 @@ def query_database(query, engine):
 
     return result
 
+
 def add_index(df):
     """
     Used to add metrics to a summary of a table and rearrange the table
@@ -49,7 +53,8 @@ def add_index(df):
     cols = ['metric'] + cols
     return df[cols]
 
-def to_json(result):
+
+def to_json(result, is_dataframe=False):
     """
     Converts sqlalchemy result to json
     result: result
@@ -62,7 +67,12 @@ def to_json(result):
     """
     try:
         is_truncated = False
-        df = pd.DataFrame(result.fetchall(), columns=result.keys())
+        if is_dataframe:
+            df = result
+            print("in to_json", df)
+        else:
+            df = pd.DataFrame(result.fetchall(), columns=result.keys())
+
         if len(df) > row_limiter:
             df = df[:row_limiter]
             is_truncated = True
@@ -82,6 +92,7 @@ def to_json(result):
         # For errors
         return '-1', None, None, False
 
+
 def get_engines(database_types=['mysql', 'redshift']):
     """
     Returns an engine object of every given type
@@ -91,9 +102,10 @@ def get_engines(database_types=['mysql', 'redshift']):
         engines[db_type] = get_engine(db_type)
     return engines
 
+
 @event.listens_for(Engine, "before_cursor_execute")
 def before_cursor_execute(conn, cursor, statement,
-                        parameters, context, executemany):
+                          parameters, context, executemany):
     """
     Runs before the cursor executes the query
     """
@@ -101,14 +113,16 @@ def before_cursor_execute(conn, cursor, statement,
     run_time = None
     conn.info.setdefault('query_start_time', []).append(time())
 
+
 @event.listens_for(Engine, "after_cursor_execute")
 def after_cursor_execute(conn, cursor, statement,
-                        parameters, context, executemany):
+                         parameters, context, executemany):
     """
     Runs after the cursor executes the query
     """
     global run_time
     run_time = time() - conn.info['query_start_time'].pop(-1)
+
 
 def get_runtime():
     """
@@ -116,20 +130,23 @@ def get_runtime():
     """
     return run_time
 
-def save_query(query_text,query_runtime,query_is_success,records_returned,database_used,engine):
+
+def save_query(query_text, query_runtime, query_is_success, records_returned, database_used, engine):
     """
     Saves the query entered by the user into the database
     """
     try:
         with engine.connect() as conn:
             sql = "INSERT INTO saved_queries(query_text,query_runtime,query_is_success,query_records_returned,database_used,created_date) values(%s,%s,%s,%s,%s,CURRENT_TIMESTAMP())"
-            result = conn.execute(sql,(query_text,query_runtime,query_is_success,records_returned,database_used))
+            result = conn.execute(
+                sql, (query_text, query_runtime, query_is_success, records_returned, database_used))
 
     except sqlalchemy.exc.SQLAlchemyError as e:
         print(e)
         result = None
 
     return result
+
 
 def get_saved_queries(engine):
     """
@@ -147,3 +164,54 @@ def get_saved_queries(engine):
     if result:
         return pd.DataFrame(result.fetchall(), columns=result.keys()).to_json(orient='records')
     return None
+
+
+def query_mongo_database(query_string):
+    drill = PyDrill(host='localhost', port=8047)
+    exception_message = ''
+    result = drill.query(query_string)
+    result_df = result.to_dataframe()
+
+    return result_df, 0, exception_message
+
+
+def is_data_empty(result, is_dataframe):
+    if is_dataframe:
+        if result is None:
+            return False
+        return result.empty
+    else:
+        print("is_data_empty", result)
+        if result:
+            return False
+        else:
+            return True
+
+
+def get_rowcount(result, is_dataframe):
+    if is_dataframe:
+        if result is not None:
+            return str(result.shape[0])
+        else:
+            return '0'
+    else:
+        result.rowcount if result else '0'
+
+
+def get_mongodb_query(query_string):
+    mongodb_file = 'mongodb_query.json'
+    sql_file = 'sql_query.sql'
+    mongo_query = ''
+    if query_string.strip() != '':
+        if os.path.exists(mongodb_file):
+            os.remove(mongodb_file)
+        if os.path.exists(sql_file):
+            os.remove(sql_file)
+        with open(sql_file, 'w') as f:
+            f.write(query_string)
+        java_command = f'java -jar Sql.jar -s {sql_file} -d {mongodb_file}'
+        os.system(java_command)
+    if os.path.exists(mongodb_file):
+        with open(mongodb_file, 'r') as f:
+            mongo_query = f.read()
+    return mongo_query.replace("******Mongo Query:*********", "").strip()
