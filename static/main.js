@@ -9,8 +9,19 @@ $(document).ready(function() {
         autofocus: true,
         extraKeys: {"Ctrl-Space": "autocomplete"},
         hintOptions: {tables: {
-            users: ["name", "score", "birthDate"],
-            countries: ["name", "population", "size"]
+            aisles: ["aisle_id", "aisle"],
+            departments: ["department_id", "department"],
+            order_products: ["order_id", "product_id", "add_to_cart_order", "reordered"],
+            order_products_prior: ["order_id", "product_id", "add_to_cart_order", "reordered"],
+            orders: ["order_id", "user_id", "eval_set", "order_number", "order_dow", "order_hour_of_day", "days_since_prior_order"],
+            products: ["product_id", "product_name", "aisle_id", "department_id"],
+            ABC_Retail_Fact_Table: ["OrderID", "OrderDate", "Order_ShippedDate", "Order_Freight", "Order_ShipCity", "Order_ShipCountry", "Order_UnitPrice", "Order_Quantity", "Order_Amount", "ProductName"],
+            ABC_Retail_Fact_Table_Revamp: ["OrderID", "OrderDate", "Order_ShippedDate", "Order_Freight", "Ship_City_ID", "Order_UnitPrice", "Order_Quantity", "Order_Amount", "Product_ID", "Employee_ID"],
+            Country_City_dim: ["City_ID", "Country", "City"],
+            Customer_dim: ["Customer_ID", "CompanyName", "ContactName", "Phone", "City_ID"],
+            Employee_dim: ["Employee_ID", "LastName", "FirstName", "Title"],
+            MyCube: ["ThisYear", "ThisQuarter", "Region", "Product", "Sales"],
+            Product_dim: ["Product_ID", "ProductName"]
         }}
     });
     doc = cm.getDoc();
@@ -29,7 +40,7 @@ $(document).ready(function() {
         get_output(query, database_type);
     })
     $('#history-tab').click();
-});
+});3
 
 function get_output(query, database_type) {
     let obj_len = null;
