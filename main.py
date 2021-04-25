@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from database_helper import query_database, to_json, get_engines, get_runtime,save_query,get_saved_queries
+from database_helper import query_database, to_json, get_engines, get_runtime,save_query,get_saved_queries, get_mongo_data
 from json import dumps
 app = Flask(__name__)
 engines = get_engines()
@@ -15,8 +15,12 @@ def post():
     query_string = request.form['query_string']
     database_type = request.form['database_type']
     exceptionMessage = ''
+    result = None
     try:
-        result = query_database(query_string, engines[database_type])
+        if database_type != 'mongo':
+            result = query_database(query_string, engines[database_type])
+        else: 
+            result = get_mongo_data(query_string, database_type)
     except Exception as e:
         result = None
         exceptionMessage = str(e)
