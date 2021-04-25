@@ -23,7 +23,7 @@ $(document).ready(function() {
     $('#submit-button').click(function() {
         cm.save();
         $('#submit-button').css('display', 'none');
-        $('#loading').css('display', 'block');
+        $('#loading').css('display', 'inline-block');
         query = getSelectedTextById("textbox");
         database_type = $('input[name=database_type]:checked').val()
         get_output(query, database_type);
