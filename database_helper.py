@@ -7,6 +7,7 @@ from time import time
 from utils import make_unique
 import os
 import pyodbc
+
 run_time = None
 mongo_run_time= None
 mongo_row_count = -1
@@ -41,6 +42,19 @@ def query_database(query, engine):
 
     return result
 
+
+def get_mongo_data(query, db_type) :
+    
+    if db_type in connection_strings:
+            conn_str = connection_strings[db_type]
+    else:
+        raise KeyError(f'{db_type} does not exist in config file!')
+    con = pyodbc.connect(conn_str)
+    cur = con.cursor()
+    cur.execute(query)
+    res = pd.DataFrame(cur.fetchall())
+    #print(res)
+    return res
 
 def add_index(df):
     """
@@ -173,7 +187,6 @@ def get_saved_queries(engine):
     if result:
         return pd.DataFrame(result.fetchall(), columns=result.keys()).to_json(orient='records')
     return None
-
 
 def query_mongo_database(query_string,db_type):
     

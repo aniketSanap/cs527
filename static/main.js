@@ -1,19 +1,46 @@
 $(document).ready(function() {
+    var mime = 'text/x-mariadb';
+    cm = CodeMirror.fromTextArea(document.querySelector('#textbox'), {
+        mode: mime,
+        indentWithTabs: true,
+        smartIndent: true,
+        lineNumbers: true,
+        matchBrackets : true,
+        autofocus: true,
+        extraKeys: {"Ctrl-Space": "autocomplete"},
+        hintOptions: {tables: {
+            aisles: ["aisle_id", "aisle"],
+            departments: ["department_id", "department"],
+            order_products: ["order_id", "product_id", "add_to_cart_order", "reordered"],
+            order_products_prior: ["order_id", "product_id", "add_to_cart_order", "reordered"],
+            orders: ["order_id", "user_id", "eval_set", "order_number", "order_dow", "order_hour_of_day", "days_since_prior_order"],
+            products: ["product_id", "product_name", "aisle_id", "department_id"],
+            ABC_Retail_Fact_Table: ["OrderID", "OrderDate", "Order_ShippedDate", "Order_Freight", "Order_ShipCity", "Order_ShipCountry", "Order_UnitPrice", "Order_Quantity", "Order_Amount", "ProductName"],
+            ABC_Retail_Fact_Table_Revamp: ["OrderID", "OrderDate", "Order_ShippedDate", "Order_Freight", "Ship_City_ID", "Order_UnitPrice", "Order_Quantity", "Order_Amount", "Product_ID", "Employee_ID"],
+            Country_City_dim: ["City_ID", "Country", "City"],
+            Customer_dim: ["Customer_ID", "CompanyName", "ContactName", "Phone", "City_ID"],
+            Employee_dim: ["Employee_ID", "LastName", "FirstName", "Title"],
+            MyCube: ["ThisYear", "ThisQuarter", "Region", "Product", "Sales"],
+            Product_dim: ["Product_ID", "ProductName"]
+        }}
+    });
+    doc = cm.getDoc();
+    window.editor = cm; 
+
     $('#history-tab').click(function() {
         get_saved_data();
-        
     });
 
     $('#submit-button').click(function() {
+        cm.save();
         $('#submit-button').css('display', 'none');
-        $('#loading').css('display', 'block');
+        $('#loading').css('display', 'inline-block');
         query = getSelectedTextById("textbox");
         database_type = $('input[name=database_type]:checked').val()
         get_output(query, database_type);
     })
-    
     $('#history-tab').click();
-});
+});3
 
 function get_output(query, database_type) {
     let obj_len = null;
@@ -122,24 +149,22 @@ function refreshTable(class_, id) {
     $('.' + class_).html("<table id='" + id + "'></table>")
 }
 
-function getSelectedTextById(id) {
-  var txtArea = document.getElementById(id);
-  var startPost = txtArea.selectionStart;
-  var endPos = txtArea.selectionEnd;
-  var selectedText = txtArea.value.substring(startPost, endPos);
 
-  if (selectedText.length <= 0) {
-    return (query = $("#textbox").val());
-  } else {
-    return selectedText;
-  }
+function getSelectedTextById(id) {
+    if (doc.somethingSelected())
+        return doc.getSelection();
+    return (query = $("#" + id).val());
 }
+
 function add_history_click(){
       $('#history-table tbody').on('click', 'tr', function () {
         var table = $('#history-table').DataTable();
         var data = table.row( this ).data();
         if(data["query_text"].length >0)
           $("#textbox").val(data["query_text"])
-        $('#textbox').focus();
+          doc.setValue(data["query_text"]);
+        // $('#textbox').focus();
+        // cm.getInputField()
+        cm.focus()
       } );
 }
