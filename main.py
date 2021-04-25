@@ -22,17 +22,17 @@ def post():
             result = query_database(query_string, engines[database_type])
             print(result)
         else:
-            result, runtime, exceptionMessage = query_mongo_database(
-                query_string)
+            result = query_mongo_database(
+                query_string,database_type)
 
     except Exception as e:
         result = None
         exceptionMessage = str(e)
         print(f'Error: {exceptionMessage}')
     json_result, delim, summary, is_truncated = to_json(
-        result, database_type == "mongodb") if not is_data_empty(result, database_type == "mongodb") else ('-1', None, exceptionMessage, False)
-    run_time = get_runtime() if database_type != 'mongodb' else runtime
-    rowcount = get_rowcount(result, database_type == "mongodb")
+        result, database_type == "mongodb") if result else ('-1', None, exceptionMessage, False)
+    run_time = get_runtime(database_type == 'mongodb')
+    rowcount = get_rowcount(result,database_type == 'mongodb')
     to_return = {
         'rows': json_result,
         'success': False if json_result == '-1' else True,
@@ -54,4 +54,4 @@ def get_query_history():
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)

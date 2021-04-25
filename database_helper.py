@@ -6,11 +6,10 @@ import pandas as pd
 from time import time
 from utils import make_unique
 import os
-from pymongo import MongoClient
-from pydrill.client import PyDrill
+import pyodbc
 run_time = None
-
-
+mongo_run_time= None
+mongo_row_count = -1
 def get_engine(db_type, conn_str=None):
     """
     Returns an engine object using a connection string
@@ -54,7 +53,7 @@ def add_index(df):
     return df[cols]
 
 
-def to_json(result, is_dataframe=False):
+def to_json(result, is_mongo_query=False):
     """
     Converts sqlalchemy result to json
     result: result
@@ -67,12 +66,20 @@ def to_json(result, is_dataframe=False):
     """
     try:
         is_truncated = False
-        if is_dataframe:
-            df = result
-            print("in to_json", df)
+        global mongo_row_count,mongo_run_time
+        if is_mongo_query:
+            if result.rowcount ==-1:
+                tick = time()
+                cols = [column[0] for column in result.description]
+                rows = (tuple(t) for t in result.fetchall())
+                df = pd.DataFrame(rows,columns=cols)
+                tock = time()
+                mongo_run_time = tock-tick
+                mongo_row_count  = len(df)
+            else:
+                return '[]', None, None, False
         else:
             df = pd.DataFrame(result.fetchall(), columns=result.keys())
-
         if len(df) > row_limiter:
             df = df[:row_limiter]
             is_truncated = True
@@ -124,10 +131,12 @@ def after_cursor_execute(conn, cursor, statement,
     run_time = time() - conn.info['query_start_time'].pop(-1)
 
 
-def get_runtime():
+def get_runtime(is_mongo=False):
     """
     Returns run time of the query
     """
+    if is_mongo:
+        return mongo_run_time
     return run_time
 
 
@@ -166,13 +175,13 @@ def get_saved_queries(engine):
     return None
 
 
-def query_mongo_database(query_string):
-    drill = PyDrill(host='localhost', port=8047)
-    exception_message = ''
-    result = drill.query(query_string)
-    result_df = result.to_dataframe()
-
-    return result_df, 0, exception_message
+def query_mongo_database(query_string,db_type):
+    
+    con = pyodbc.connect(connection_strings[db_type])
+    cur = con.cursor()
+    result=cur.execute(query_string)
+    
+    return result
 
 
 def is_data_empty(result, is_dataframe):
@@ -188,14 +197,12 @@ def is_data_empty(result, is_dataframe):
             return True
 
 
-def get_rowcount(result, is_dataframe):
-    if is_dataframe:
-        if result is not None:
-            return str(result.shape[0])
-        else:
-            return '0'
-    else:
-        result.rowcount if result else '0'
+def get_rowcount(result,is_mongo):
+    if is_mongo:
+        if not result:
+            return '-1'
+        return max(mongo_row_count,result.rowcount)
+    return result.rowcount if result else '0'
 
 
 def get_mongodb_query(query_string):
