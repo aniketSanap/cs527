@@ -27,3 +27,7 @@
     cursor: pointer;
     text-decoration: underline;
 }
+
+.CodeMirror {
+    width: 100%;
+}
