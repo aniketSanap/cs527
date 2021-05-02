@@ -7,6 +7,8 @@ from time import time
 from utils import make_unique
 import os
 import pyodbc
+import pymysql
+from pymysql.constants import CLIENT
 
 run_time = None
 mongo_run_time= None
@@ -67,7 +69,7 @@ def add_index(df):
     return df[cols]
 
 
-def to_json(result, is_mongo_query=False):
+def to_json(result, database_type):
     """
     Converts sqlalchemy result to json
     result: result
@@ -81,7 +83,7 @@ def to_json(result, is_mongo_query=False):
     try:
         is_truncated = False
         global mongo_row_count,mongo_run_time
-        if is_mongo_query:
+        if database_type == "mongodb":
             if result.rowcount ==-1:
                 tick = time()
                 cols = [column[0] for column in result.description]
@@ -92,6 +94,22 @@ def to_json(result, is_mongo_query=False):
                 mongo_row_count  = len(df)
             else:
                 return '[]', None, None, False
+        elif database_type == "mysql":
+            try:
+                if result.description is not None:                    
+                        cols = [column[0] for column in result.description]
+                        df = pd.DataFrame(result.fetchall(),columns=cols)
+                else:
+                        return '[]', None, None, False
+                while(result.nextset()):
+                    if result.description is not None:                    
+                        cols = [column[0] for column in result.description]
+                        df = pd.DataFrame(result.fetchall(),columns=cols)
+                    else:
+                        return '[]', None, None, False
+            except Exception as e:
+                exceptionMessage = str(e)
+                return ('-1', None, exceptionMessage, False)
         else:
             df = pd.DataFrame(result.fetchall(), columns=result.keys())
         if len(df) > row_limiter:
@@ -218,20 +236,17 @@ def get_rowcount(result,is_mongo):
     return result.rowcount if result else '0'
 
 
-def get_mongodb_query(query_string):
-    mongodb_file = 'mongodb_query.json'
-    sql_file = 'sql_query.sql'
-    mongo_query = ''
-    if query_string.strip() != '':
-        if os.path.exists(mongodb_file):
-            os.remove(mongodb_file)
-        if os.path.exists(sql_file):
-            os.remove(sql_file)
-        with open(sql_file, 'w') as f:
-            f.write(query_string)
-        java_command = f'java -jar Sql.jar -s {sql_file} -d {mongodb_file}'
-        os.system(java_command)
-    if os.path.exists(mongodb_file):
-        with open(mongodb_file, 'r') as f:
-            mongo_query = f.read()
-    return mongo_query.replace("******Mongo Query:*********", "").strip()
+def query_mysql_database(query,database_type):
+    conn = {
+    "host": "cs527.cyonym6v6jv8.us-east-1.rds.amazonaws.com",
+    "password": "justalongstring",
+    "port": 3306,
+    "user": "admin",
+    "client_flag": CLIENT.MULTI_STATEMENTS,
+    "autocommit": "True",
+    "database": "InstaKart"
+    }
+    db = pymysql.connect(**conn)
+    cur = db.cursor()
+    cur.execute(query)
+    return cur

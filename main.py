@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, jsonify
-from database_helper import query_database, to_json, get_engines, get_runtime, save_query, get_saved_queries, query_mongo_database, is_data_empty, get_rowcount
-
+from database_helper import query_database, to_json, get_engines, get_runtime, save_query, get_saved_queries, query_mongo_database, is_data_empty, get_rowcount,query_mysql_database
 from json import dumps
 app = Flask(__name__)
 engines = get_engines()
@@ -20,9 +19,11 @@ def post():
 
     result = None
     try:
-        if database_type != 'mongodb':
+        if database_type == 'redshift':
             result = query_database(query_string, engines[database_type])
             print(result)
+        elif database_type == "mysql":
+            result = query_mysql_database(query_string,database_type)
         else:
             result = query_mongo_database(
                 query_string,database_type)
@@ -32,7 +33,7 @@ def post():
         exceptionMessage = str(e)
         print(f'Error: {exceptionMessage}')
     json_result, delim, summary, is_truncated = to_json(
-        result, database_type == "mongodb") if result else ('-1', None, exceptionMessage, False)
+        result, database_type) if result else ('-1', None, exceptionMessage, False)
     run_time = get_runtime(database_type == 'mongodb')
     rowcount = get_rowcount(result,database_type == 'mongodb')
     to_return = {
