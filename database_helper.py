@@ -240,5 +240,10 @@ def query_mysql_database(query,database_type):
     conn["client_flag"] = CLIENT.MULTI_STATEMENTS
     db = pymysql.connect(**conn)
     cur = db.cursor()
-    cur.execute(query)
+    try:
+        cur.execute(query)
+    except Exception as e:
+        db.close()
+        raise Exception(str(e))
+    
     return cur,db
