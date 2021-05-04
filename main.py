@@ -32,7 +32,7 @@ def post():
             result = None
             exceptionMessage = str(e)
             print(f'Error: {exceptionMessage}')
-            db_object.close()
+
         json_result, delim, summary, is_truncated = to_json(
             result, database_type) if result else ('-1', None, exceptionMessage, False)
         run_time = get_runtime(database_type == 'mongodb')
@@ -51,7 +51,7 @@ def post():
         to_return = dumps(to_return)
         return to_return
     finally:
-        db_object.close()
+        if db_object: db_object.close()
 
 @app.route('/get_query_history', methods=['POST'])
 def get_query_history():
