@@ -1,7 +1,7 @@
 import sqlalchemy
 from sqlalchemy import create_engine, text, event
 from sqlalchemy.engine import Engine
-from config import connection_strings, row_limiter
+from config import connection_strings, row_limiter, conn
 import pandas as pd
 from time import time
 from utils import make_unique
@@ -237,15 +237,7 @@ def get_rowcount(result,is_mongo):
 
 
 def query_mysql_database(query,database_type):
-    conn = {
-    "host": "cs527.cyonym6v6jv8.us-east-1.rds.amazonaws.com",
-    "password": "justalongstring",
-    "port": 3306,
-    "user": "admin",
-    "client_flag": CLIENT.MULTI_STATEMENTS,
-    "autocommit": "True",
-    "database": "InstaKart"
-    }
+    conn["client_flag"] = CLIENT.MULTI_STATEMENTS
     db = pymysql.connect(**conn)
     cur = db.cursor()
     cur.execute(query)
