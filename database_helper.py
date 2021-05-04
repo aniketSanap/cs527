@@ -249,4 +249,4 @@ def query_mysql_database(query,database_type):
     db = pymysql.connect(**conn)
     cur = db.cursor()
     cur.execute(query)
-    return cur
+    return cur,db
