@@ -237,6 +237,8 @@ def get_rowcount(result,is_mongo):
 
 
 def query_mysql_database(query,database_type):
+    if 'use' in query.lower():
+        conn['database'] = query.strip().split()[-1]
     conn["client_flag"] = CLIENT.MULTI_STATEMENTS
     db = pymysql.connect(**conn)
     cur = db.cursor()
